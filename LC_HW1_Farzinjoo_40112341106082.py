@@ -1,45 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# پارامترهای مسئله
-h = 0.01
-t = np.arange(0, 5, h)
-N = len(t)
-
-# ضرایب داده‌شده
 M_alpha = -8.790
 M_q = -2.075
 M_deltaE = -11.87
 
-# متغیرهای حالت
-theta = np.zeros(N)
-thetadot = np.zeros(N)
+dt = 0.01  
+t_max = 5  
+t = np.arange(0, t_max, dt)
 
-# ورودی سکان
-deltaE = np.zeros(N)
-deltaE[N//2:] = 10
+deltaE_values = [-5, 0, 10]  
 
-# روش اویلر
-for k in range(N-1):
- thetadot [k+1] = thetadot [k] + h * (M_alpha * theta[k] + M_q * thetadot[k] + M_deltaE * deltaE[k])
-theta[k+1] = theta[k] + h * thetadot[k]
+def solve_euler(deltaE):
+    deltaE_rad = np.radians(deltaE)  
+    theta = np.zeros_like(t)
+    theta_dot = np.zeros_like(t)
 
-# رسم نمودار
-plt.figure(figsize=(8,6))
+    for i in range(1, len(t)):
+        theta_ddot = M_alpha * theta[i-1] + M_q * theta_dot[i-1] + M_deltaE * deltaE_rad
+        theta_dot[i] = theta_dot[i-1] + theta_ddot * dt
+        theta[i] = theta[i-1] + theta_dot[i] * dt
+    
+    return theta
 
-plt.subplot(2,1,1)
-plt.plot(t, theta, 'b', linewidth=1.5)
-plt.xlabel('زمان (ثانیه)')
-plt.ylabel('زاویه پیچ θ (درجه)')
-plt.title('پاسخ زاویه پیچ به ورودی سکان')
+plt.figure(figsize=(8, 5))
+for deltaE in deltaE_values:
+    theta_response = solve_euler(deltaE)
+    plt.plot(t, theta_response, label=f'δE = {deltaE} deg')
+
+plt.xlabel('Time (s)')
+plt.ylabel('Theta (rad)')
+plt.title('Pitch Angle Response')
+plt.legend()
 plt.grid()
-
-plt.subplot(2,1,2)
-plt.plot(t, deltaE, 'r', linewidth=1.5)
-plt.xlabel('زمان (ثانیه)')
-plt.ylabel('ورودی δ_E (درجه)')
-plt.title('ورودی سکان')
-plt.grid()
-
-plt.tight_layout()
 plt.show()
